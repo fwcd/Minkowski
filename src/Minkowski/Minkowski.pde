@@ -49,6 +49,12 @@ class Point {
         ellipse(toScreenX(), toScreenY(), pointSize, pointSize);
     }
     
+    void paintLine(Point dest, int r, int g, int b, float thickness) {
+        stroke(r, g, b);
+        strokeWeight(thickness);
+        line(toScreenX(), toScreenY(), dest.toScreenX(), dest.toScreenY());
+    }
+    
     void paintText(String str, float size) {
         textSize(size);
         text(str, toScreenX(), toScreenY());
@@ -60,33 +66,33 @@ class CoordSystem {
     final boolean showGrid = true;
     final float gridSpacing = 50F;
     float v;
-    int r;
-    int g;
-    int b;
+    int rColor;
+    int gColor;
+    int bColor;
     
     CoordSystem(float v, int r, int g, int b) {
         this.v = v;
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        rColor = r;
+        gColor = g;
+        bColor = b;
     }
     
     void paint() {
         float maxX = width - (padding * 2);
         float maxY = height - (padding * 2);
         
-        paintRange(0, 0, maxX, 0, 5); // x-axis
-        paintRange(0, 0, 0, maxY, 5); // y-axis
+        paintLine(0, 0, maxX, 0, 5); // x-axis
+        paintLine(0, 0, 0, maxY, 5); // y-axis
         
         new Point(maxX, 0).transform(v).paintText("x", 24);
         new Point(0, maxY).transform(v).paintText("ct", 24);
         
         if (showGrid) {
             for (int y=0; y<maxY; y+=gridSpacing) {
-                paintRange(0, y, maxX, y, 1);
+                paintLine(0, y, maxX, y, 1);
             }
             for (int x=0; x<maxX; x+=gridSpacing) {
-                paintRange(x, 0, x, maxY, 1);
+                paintLine(x, 0, x, maxY, 1);
             }
         }
     }
@@ -97,17 +103,23 @@ class CoordSystem {
     
     void trace(Point p, float dv) {
         Point pT = p.transform(dv);
-        paintRange(0, pT.getCT(), pT.getX(), pT.getCT(), 3);
-        paintRange(pT.getX(), 0, pT.getX(), pT.getCT(), 3);
+        paintLine(0, pT.getCT(), pT.getX(), pT.getCT(), 3);
+        paintLine(pT.getX(), 0, pT.getX(), pT.getCT(), 3);
     }
     
     void paintRange(float xA, float ctA, float xB, float ctB, float pointSize) {
         float step = 1F / granularity;
         for (float x=xA; x<=xB; x+=step) {
             for (float ct=ctA; ct<=ctB; ct+=step) {
-                new Point(x, ct).transform(v).paint(r, g, b, pointSize);
+                new Point(x, ct).transform(v).paint(rColor, gColor, bColor, pointSize);
             }
         }
+    }
+    
+    void paintLine(float xA, float ctA, float xB, float ctB, float thickness) {
+        Point a = new Point(xA, ctA).transform(v);
+        Point b = new Point(xB, ctB).transform(v);
+        a.paintLine(b, rColor, gColor, bColor, thickness);
     }
 }
 
