@@ -84,6 +84,7 @@ class CoordSystem {
         paintLine(0, 0, maxX, 0, 5); // x-axis
         paintLine(0, 0, 0, maxY, 5); // y-axis
         
+        fill(rColor, gColor, bColor);
         new Point(maxX, 0).transform(v).paintText("x", 24);
         new Point(0, maxY).transform(v).paintText("ct", 24);
         
@@ -133,6 +134,7 @@ class Slider {
     float min;
     float max;
     float value;
+    boolean dragging = false;
     
     Slider(int x, int y, float min, float max) {
         this.x = x;
@@ -148,9 +150,16 @@ class Slider {
         return value;
     }
     
+    boolean containsX(int x) {
+        return x >= this.x && x <= (this.x + w);
+    }
+    
+    boolean containsY(int y) {
+        return y >= this.y && y <= (this.y + h);
+    }
+    
     boolean contains(int x, int y) {
-        return x >= this.x && x <= (this.x + w)
-                && y >= this.y && y <= (this.y + h);
+        return containsX(x) && containsY(y);
     }
     
     void paint(String suffix) {
@@ -158,9 +167,16 @@ class Slider {
         fill(128);
         rect(x, y, w, h);
         
-        if (mousePressed && contains(mouseX, mouseY)) {
-            sliderX = mouseX;
-            value = (((sliderX - x) / (float) w) * (max - min)) + min;
+        if (mousePressed) {
+            if (contains(mouseX, mouseY) && mouseButton == LEFT) {
+                dragging = true;
+            }
+            if (dragging && containsX(mouseX)) {
+                sliderX = mouseX;
+                value = (((sliderX - x) / (float) w) * (max - min)) + min;
+            }
+        } else {
+            dragging = false;
         }
         
         stroke(0);
@@ -178,6 +194,7 @@ final int padding = 50;
 final Slider slider = new Slider(10, 10, -c, c);
 final CoordSystem observerSystem = new CoordSystem(0, 100, 100, 100);
 Point point = null;
+boolean showHint = true;
 
 // Method declarations
 
@@ -207,5 +224,15 @@ void draw() {
     
     if (mousePressed && mouseButton == RIGHT) {
         point = new Point(mouseX, mouseY, true);
+    }
+    
+    if (showHint) {
+        fill(0);
+        String hint = "Drag slider to change velocity - Right click to place point";
+        text(hint, padding, height - (padding / 2));
+        
+        if (mousePressed) {
+            showHint = false;
+        }
     }
 }
